@@ -1,12 +1,13 @@
 package main
 
-
 import (
-"bytes"
-"encoding/base64"
-"fmt"
-"image"
-"image/png"
+	"bytes"
+	"encoding/base64"
+	"fmt"
+	"image"
+	"image/png"
+//	"image/draw"
+	"os"
 )
 
 func Show(f func(int, int) [][]uint8) {
@@ -35,6 +36,15 @@ func ShowImage(m image.Image) {
 	if err != nil {
 		panic(err)
 	}
+
+	//image.show
+
 	enc := base64.StdEncoding.EncodeToString(buf.Bytes())
 	fmt.Println("IMAGE:" + enc)
+
+	oimg, _ := os.Create("mynew1.png")
+
+	defer oimg.Close()
+	png.Encode(oimg, m)
+
 }
