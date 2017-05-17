@@ -10,6 +10,7 @@ import (
 	"encoding/hex"
 	"crypto/rand"
 	"encoding/base64"
+//	"strings"
 )
 
 func main() {
@@ -21,6 +22,19 @@ func main() {
 	fmt.Println(ip)
 
 	fmt.Println("edocprinter7")
+
+	const key32 = "12345678901234567890123456789012"
+	const orgtxt = "this is a test hahahahahahah"
+
+
+	ciphertxt, _ := AESEncryptCFB(orgtxt, []byte(key32))
+	deciphertxt, _ := AESDecryptCFB(ciphertxt, []byte(key32))
+
+
+	fmt.Printf(" original txt is %s\n", orgtxt)
+	fmt.Printf(" cipher txt is %s\n", ciphertxt)
+	fmt.Printf(" decipher txt is %s\n", deciphertxt)
+
 }
 
 
@@ -67,26 +81,45 @@ func getLocalIP() (string, error) {
 }
 
 
-func AESEncryptCFB(src string, key, iv []byte) (string, error) {
+func AESEncryptCFB(srctxt string, key []byte) (string, error) {
 
 	aesBlockEncrypter, err := aes.NewCipher(key)
 	if err != nil {
 		return "", err
 	}
 
+	txtbytes := []byte(srctxt)
+	dstbytes := make([]byte, aes.BlockSize+len(srctxt))
+	iv := dstbytes[:aes.BlockSize]
+
+	if _, err := rand.Read(iv); err != nil {
+		panic(err)
+	}
 	aesEncrypter := cipher.NewCFBEncrypter(aesBlockEncrypter, iv)
-	aesEncrypter.XORKeyStream(dst, src)
-	return dst, nil
+	aesEncrypter.XORKeyStream(dstbytes[aes.BlockSize:], txtbytes)
+
+	return base64.URLEncoding.EncodeToString(dstbytes), nil
 }
 
-func DecryptAESCFB(dst, src, key, iv []byte) error {
+func AESDecryptCFB(srctxt string, key[]byte) (string, error) {
+
+	ciphertext, _ := base64.URLEncoding.DecodeString(srctxt)
+
 	aesBlockDecrypter, err := aes.NewCipher([]byte(key))
 	if err != nil {
-		return nil
+		return "", nil
 	}
+
+	if len(ciphertext) < aes.BlockSize {
+		return "", errors.New("ciphertext too short")
+	}
+	iv := ciphertext[:aes.BlockSize]
+	srcbytes := ciphertext[aes.BlockSize:]
+
 	aesDecrypter := cipher.NewCFBDecrypter(aesBlockDecrypter, iv)
-	aesDecrypter.XORKeyStream(dst, src)
-	return nil
+	aesDecrypter.XORKeyStream(srcbytes, srcbytes)
+
+	return string(srcbytes), nil
 }
 
 // encrypt string to base64 crypto using AES
