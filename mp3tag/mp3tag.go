@@ -5,39 +5,75 @@ import (
 	"log"
 	"fmt"
 	"io/ioutil"
-	"os"
+	//"os"
 	"unsafe"
 	"reflect"
 	//"testing"
 	"path/filepath"
+
+	"os"
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
+	"github.com/mitchellh/go-homedir"
 )
 
+type CALLBACKUpdateTag func (fullpath string, album string, title string, artist string, tracknum int)
 
-func setTitle(title string, artist string, album string, tracknum int) {
+func updateMP3Tags(fullpath string, album string, title string, artist string, tracknum int) {
 
+	tag, err := id3v2.Open(fullpath, id3v2.Options{Parse: true})
+	if err != nil {
+		log.Println("Error while opening mp3 file: ", err)
+	}
+	defer tag.Close()
+
+	// Read frames.
+	//fmt.Println(tag.Artist())
+	//fmt.Println(tag.Title())
+
+	// Set simple text frames.
+/*
+	tag.SetAlbum(album)
+	tag.SetArtist(artist)
+	tag.SetTitle(title)
+
+	tag.SetTrack(tracknum)
+*/
+	fmt.Println(tracknum, "album: ", album, "title: ", title, "artist: ", artist)
+	// Set comment frame.
 }
 
-func EnumDir(dirname string) ([]os.FileInfo) {
+func EnumDir(dirname string, funcAction CALLBACKUpdateTag)  {
+
+	// fmt.Println("dirname only is :: ", filepath.Base(dirname))
 
 	files, err := ioutil.ReadDir(dirname)
 	if err != nil {
 		log.Println(err)
 
-		return nil //make([]os.FileInfo, 0)
+		return //nil //make([]os.FileInfo, 0)
 	}
 
 	for i, file := range files {
 		if file.IsDir() {
-			fmt.Println(i, " DIR:: ", file.Name())
-			EnumDir(dirname + "\\" + file.Name())
+			log.Println(i, " DIR:: ", file.Name())
+			EnumDir(dirname + "\\" + file.Name(), funcAction)
 
 		} else {
 
-			fmt.Println(i, " ", filepath.Base(file.Name()), file.Name())
+			fname := file.Name()
 
+			//fmt.Println(i, " ", filepath.Base(file.Name()), file.Name())
+			funcAction(filepath.Join(dirname, fname), filepath.Base(dirname), fname, "artist", i)
 		}
 
 	}
+
+	return
+}
+
+func testSlice1() {
+
 	str0 := "This is a full stringn!!"
 	str1 := str0[2:8]
 	typeOfStr1 := reflect.TypeOf(str1)
@@ -49,9 +85,7 @@ func EnumDir(dirname string) ([]os.FileInfo) {
 
 	fmt.Println("str1 is ", str1, typeOfStr1, typeOfStr1.Kind(), arr1, reflect.TypeOf(arr1), typeofArr1.Kind())
 
-	return files
 }
-
 
 type T1 struct {
 	name string
@@ -85,9 +119,82 @@ func (T) M1() {}
 func (T) M2() {}
 
 
+
+type CmdStruct struct {
+	rootCmd *cobra.Command
+	cfgFile string
+
+}
+
+
+func (cmd *CmdStruct) init() {
+
+	//cobra.OnInitialize(cmd.initConfig)
+
+	cmd.rootCmd.PersistentFlags().StringVar(&cmd.cfgFile, "config", "", "config file (default is $HOME/.cobra.yaml)")
+	//rootCmd.PersistentFlags().StringVarP(&projectBase, "projectbase", "b", "", "base project directory eg. github.com/spf13/")
+	cmd.rootCmd.PersistentFlags().StringP("author", "a", "YOUR NAME", "Author name for copyright attribution")
+	//rootCmd.PersistentFlags().StringVarP(&userLicense, "license", "l", "", "Name of license for the project (can provide `licensetext` in config)")
+	cmd.rootCmd.PersistentFlags().Bool("viper", true, "Use Viper for configuration")
+
+	viper.BindPFlag("author", cmd.rootCmd.PersistentFlags().Lookup("author"))
+	viper.BindPFlag("projectbase", cmd.rootCmd.PersistentFlags().Lookup("projectbase"))
+	viper.BindPFlag("useViper", cmd.rootCmd.PersistentFlags().Lookup("viper"))
+	viper.SetDefault("author", "NAME HERE <EMAIL ADDRESS>")
+	viper.SetDefault("license", "apache")
+}
+
+func (cmd *CmdStruct) initConfig() {
+	// Don't forget to read config either from cfgFile or from home directory!
+	if cmd.cfgFile != "" {
+		// Use config file from the flag.
+		viper.SetConfigFile(cmd.cfgFile)
+	} else {
+		// Find home directory.
+		home, err := homedir.Dir()
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
+		// Search config in home directory with name ".cobra" (without extension).
+		viper.AddConfigPath(home)
+		viper.SetConfigName(".cobra")
+	}
+
+	if err := viper.ReadInConfig(); err != nil {
+		fmt.Println("Can't read config:", err)
+		os.Exit(1)
+	}
+}
+
+type ICmdExecute interface {
+	Init()
+	Execute()
+	//Speak() string
+}
+
 func main() {
-	EnumDir("g:\\temp\\My Weird School 01 Miss Daisy Is Crazy")
-	EnumDir("g:\\temp\\My Weird School")
+	//EnumDir("g:\\temp\\My Weird School 01 Miss Daisy Is Crazy")
+	EnumDir("g:\\temp\\My Weird School", updateMP3Tags)
+
+	var cmd = CmdStruct{}
+
+	//var cfgFile string
+	cmd.rootCmd = &cobra.Command{
+		Use:   "hugo",
+		Short: "Hugo is a very fast static site generator",
+		Long: `A Fast and Flexible Static Site Generator built with
+                love by spf13 and friends in Go.
+                Complete documentation is available at http://hugo.spf13.com`,
+		Run: func(cmd *cobra.Command, args []string) {
+			// Do Stuff Here
+			fmt.Println("This is main cmd line utility")
+		},
+	}
+
+
+	cmd.rootCmd.Execute()
 }
 
 
@@ -122,8 +229,8 @@ func main2() {
 	}
 
 
-	EnumDir("g:\\temp\\My Weird School 01 Miss Daisy Is Crazy")
-	EnumDir("g:\\temp\\My Weird School")
+	//EnumDir("g:\\temp\\My Weird School 01 Miss Daisy Is Crazy")
+	//EnumDir("g:\\temp\\My Weird School")
 	// Open file and parse tag in it.
 	tag, err := id3v2.Open("g:\\temp\\01 I Hate School.mp3", id3v2.Options{Parse: true})
 	if err != nil {
