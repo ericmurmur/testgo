@@ -19,6 +19,8 @@ import (
 
 type CALLBACKUpdateTag func (fullpath string, album string, title string, artist string, tracknum int)
 
+
+
 func updateMP3Tags(fullpath string, album string, title string, artist string, tracknum int) {
 
 	tag, err := id3v2.Open(fullpath, id3v2.Options{Parse: true})
@@ -120,35 +122,66 @@ func (T) M2() {}
 
 
 
-type CmdStruct struct {
+type CLIStruct struct {
 	rootCmd *cobra.Command
+	versionCmd *cobra.Command
 	cfgFile string
+	flagstr1 string
 
 }
 
 
-func (cmd *CmdStruct) init() {
+func (cli *CLIStruct) init() {
 
-	//cobra.OnInitialize(cmd.initConfig)
+	//cobra.OnInitialize(cmd.initConfig)mp
+	cli.rootCmd = &cobra.Command{
+		Use:   "mp3tag",
+		Short: "Hugo is a very fast static site generator",
+		Long: `mp3tag is for updating the tags in mp3
+				`,
 
-	cmd.rootCmd.PersistentFlags().StringVar(&cmd.cfgFile, "config", "", "config file (default is $HOME/.cobra.yaml)")
+		Args: cobra.ArbitraryArgs,
+		Run: func(cmd *cobra.Command, args []string) {
+			// Do Stuff Here
+
+			fmt.Println("This is main cmd line utility", args, cli.rootCmd.Flags().Lookup("myflag1").Value.String())
+		},
+	}
+
+	cli.rootCmd.Flags().StringVar(&cli.flagstr1, "myflag1", "defval1", "how to use")
+	cli.rootCmd.PersistentFlags().StringVar(&cli.cfgFile, "config", "", "config file (default is $HOME/.cobra.yaml)")
 	//rootCmd.PersistentFlags().StringVarP(&projectBase, "projectbase", "b", "", "base project directory eg. github.com/spf13/")
-	cmd.rootCmd.PersistentFlags().StringP("author", "a", "YOUR NAME", "Author name for copyright attribution")
+	cli.rootCmd.PersistentFlags().StringP("author", "a", "YOUR NAME", "Author name for copyright attribution")
 	//rootCmd.PersistentFlags().StringVarP(&userLicense, "license", "l", "", "Name of license for the project (can provide `licensetext` in config)")
-	cmd.rootCmd.PersistentFlags().Bool("viper", true, "Use Viper for configuration")
+	cli.rootCmd.PersistentFlags().Bool("viper", true, "Use Viper for configuration")
 
-	viper.BindPFlag("author", cmd.rootCmd.PersistentFlags().Lookup("author"))
+
+	cli.versionCmd = &cobra.Command{
+		Use:   "version",
+		Short: "Print the version number",
+		Long:  `All software has versions. This is Hugo's`,
+
+		Args: cobra.ArbitraryArgs,
+		Run: func(cmd *cobra.Command, args []string) {
+			fmt.Println("Hugo Static Site Generator v0.9 -- HEAD")
+		},
+	}
+
+	cli.rootCmd.AddCommand(cli.versionCmd)
+
+/*	viper.BindPFlag("author", cmd.rootCmd.PersistentFlags().Lookup("author"))
 	viper.BindPFlag("projectbase", cmd.rootCmd.PersistentFlags().Lookup("projectbase"))
 	viper.BindPFlag("useViper", cmd.rootCmd.PersistentFlags().Lookup("viper"))
 	viper.SetDefault("author", "NAME HERE <EMAIL ADDRESS>")
 	viper.SetDefault("license", "apache")
+*/
 }
 
-func (cmd *CmdStruct) initConfig() {
+func (cli *CLIStruct) initConfig() {
 	// Don't forget to read config either from cfgFile or from home directory!
-	if cmd.cfgFile != "" {
+	if cli.cfgFile != "" {
 		// Use config file from the flag.
-		viper.SetConfigFile(cmd.cfgFile)
+		viper.SetConfigFile(cli.cfgFile)
 	} else {
 		// Find home directory.
 		home, err := homedir.Dir()
@@ -168,33 +201,19 @@ func (cmd *CmdStruct) initConfig() {
 	}
 }
 
-type ICmdExecute interface {
-	Init()
-	Execute()
-	//Speak() string
-}
 
 func main() {
 	//EnumDir("g:\\temp\\My Weird School 01 Miss Daisy Is Crazy")
-	EnumDir("g:\\temp\\My Weird School", updateMP3Tags)
+	//EnumDir("g:\\temp\\My Weird School", updateMP3Tags)
 
-	var cmd = CmdStruct{}
-
-	//var cfgFile string
-	cmd.rootCmd = &cobra.Command{
-		Use:   "hugo",
-		Short: "Hugo is a very fast static site generator",
-		Long: `A Fast and Flexible Static Site Generator built with
-                love by spf13 and friends in Go.
-                Complete documentation is available at http://hugo.spf13.com`,
-		Run: func(cmd *cobra.Command, args []string) {
-			// Do Stuff Here
-			fmt.Println("This is main cmd line utility")
-		},
-	}
+	var cli = CLIStruct{}
 
 
-	cmd.rootCmd.Execute()
+
+	cli.init()
+
+	cli.rootCmd.Execute()
+	//cli.rootCmd.
 }
 
 
