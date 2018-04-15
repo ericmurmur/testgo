@@ -4,76 +4,21 @@ import (
 	"github.com/bogem/id3v2"
 	"log"
 	"fmt"
-	"io/ioutil"
+
 	//"os"
 	"unsafe"
 	"reflect"
 	//"testing"
-	"path/filepath"
 
 	"./cli"
+
 	//"os"
 	//"github.com/spf13/cobra"
 	//"github.com/spf13/viper"
 	//"github.com/mitchellh/go-homedir"
+	//"sync"
 )
 
-type CALLBACKUpdateTag func (fullpath string, album string, title string, artist string, tracknum int)
-
-
-
-func updateMP3Tags(fullpath string, album string, title string, artist string, tracknum int) {
-
-	tag, err := id3v2.Open(fullpath, id3v2.Options{Parse: true})
-	if err != nil {
-		log.Println("Error while opening mp3 file: ", err)
-	}
-	defer tag.Close()
-
-	// Read frames.
-	//fmt.Println(tag.Artist())
-	//fmt.Println(tag.Title())
-
-	// Set simple text frames.
-/*
-	tag.SetAlbum(album)
-	tag.SetArtist(artist)
-	tag.SetTitle(title)
-
-	tag.SetTrack(tracknum)
-*/
-	fmt.Println(tracknum, "album: ", album, "title: ", title, "artist: ", artist)
-	// Set comment frame.
-}
-
-func EnumDir(dirname string, funcAction CALLBACKUpdateTag)  {
-
-	// fmt.Println("dirname only is :: ", filepath.Base(dirname))
-
-	files, err := ioutil.ReadDir(dirname)
-	if err != nil {
-		log.Println(err)
-
-		return //nil //make([]os.FileInfo, 0)
-	}
-
-	for i, file := range files {
-		if file.IsDir() {
-			log.Println(i, " DIR:: ", file.Name())
-			EnumDir(dirname + "\\" + file.Name(), funcAction)
-
-		} else {
-
-			fname := file.Name()
-
-			//fmt.Println(i, " ", filepath.Base(file.Name()), file.Name())
-			funcAction(filepath.Join(dirname, fname), filepath.Base(dirname), fname, "artist", i)
-		}
-
-	}
-
-	return
-}
 
 func testSlice1() {
 
@@ -123,18 +68,37 @@ func (T) M2() {}
 
 
 func main() {
-	//EnumDir("g:\\temp\\My Weird School 01 Miss Daisy Is Crazy")
+
 	//EnumDir("g:\\temp\\My Weird School", updateMP3Tags)
 
 	//var cmdline = cli.CLIStruct{}
 
 
+	s1 := "this is a test string"
+	sub1 := s1[1:7]
+	run1 := []rune(s1)
+	subr1 := run1[2:9]
 
+
+	fmt.Println("sub1 is ", sub1, reflect.TypeOf(sub1))
+	fmt.Println("run1 is ", run1, subr1, " ==> ", reflect.TypeOf(run1), reflect.TypeOf(subr1))
 	//cmdline.init()
 
 	//cmdline.rootCmd.Execute()
 	cli.Execute()
 	//cli.rootCmd.
+
+/*
+	var mm = map[string]map[interface{}]interface{} {"key1" : {1: "222"}, "key2" : {2: "2222222"}}
+
+	var hits struct {
+		sync.Mutex
+		n int
+	}
+
+	hits.Lock()
+	fmt.Println(mm)
+*/
 }
 
 

@@ -7,7 +7,12 @@ import (
 	"fmt"
 	"os"
 	"github.com/mitchellh/go-homedir"
+	//"github.com/urfave/cli"
+
+	"path/filepath"
+
 )
+
 
 type CLIStruct struct {
 	rootCmd *cobra.Command
@@ -17,7 +22,7 @@ type CLIStruct struct {
 
 }
 
-
+/*
 func (cli *CLIStruct) init() {
 
 	//cobra.OnInitialize(cmd.initConfig)mp
@@ -56,12 +61,12 @@ func (cli *CLIStruct) init() {
 
 	cli.rootCmd.AddCommand(cli.versionCmd)
 
-	/*	viper.BindPFlag("author", cmd.rootCmd.PersistentFlags().Lookup("author"))
-		viper.BindPFlag("projectbase", cmd.rootCmd.PersistentFlags().Lookup("projectbase"))
-		viper.BindPFlag("useViper", cmd.rootCmd.PersistentFlags().Lookup("viper"))
-		viper.SetDefault("author", "NAME HERE <EMAIL ADDRESS>")
-		viper.SetDefault("license", "apache")
-	*/
+	//	viper.BindPFlag("author", cmd.rootCmd.PersistentFlags().Lookup("author"))
+	//	viper.BindPFlag("projectbase", cmd.rootCmd.PersistentFlags().Lookup("projectbase"))
+	//	viper.BindPFlag("useViper", cmd.rootCmd.PersistentFlags().Lookup("viper"))
+	//	viper.SetDefault("author", "NAME HERE <EMAIL ADDRESS>")
+	//	viper.SetDefault("license", "apache")
+
 }
 
 func (cli *CLIStruct) initConfig() {
@@ -88,22 +93,53 @@ func (cli *CLIStruct) initConfig() {
 	}
 }
 
+*/
+
+//var cli
+var cliFlags struct {
+	myStrFlag1      string
+	genre	string
+	artist	string
+
+}
 
 var cfgFile string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "newApp",
-	Short: "A brief description of your application",
+	Use:   "mp3tag",
+	Short: "mp3tag g:/albumdir/",
 	Long: `A longer description that spans multiple lines and likely contains
 examples and usage of using your application. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+		mp3tag --genre Genre --artist artist g:/albumdir/
+`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
-	Run: func(cmd *cobra.Command, args []string) { },
+
+	Args: cobra.ArbitraryArgs,
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("This is main cmd line utility", args)
+		myflag := cmd.Flags().Lookup("myflag1")
+		if (myflag!=nil) {
+			fmt.Println("flag val: ", myflag.Value.String())
+		} else {
+			fmt.Println("flag val: FLAG not found")
+		}
+
+		if len(args) >=1 {
+			artist := cliFlags.artist
+			//genre := cliFlags.genre
+
+			if len(artist)==0 {
+				artist = filepath.Base(args[0])
+			}
+
+			fmt.Println("args is ", args[0])
+			EnumDir(args[0], artist, cliFlags.genre)
+
+		}
+
+	},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -121,7 +157,11 @@ func init() {
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
+	rootCmd.PersistentFlags().StringVar(&cliFlags.myStrFlag1, "myflag1", "defval1", "how to use")
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.newApp.yaml)")
+
+	rootCmd.PersistentFlags().StringVarP(&cliFlags.artist, "artist", "a", "", "artist name")
+	rootCmd.PersistentFlags().StringVarP(&cliFlags.genre, "genre", "g", "Children's Books", "Genre")
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
@@ -130,6 +170,7 @@ func init() {
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
+
 	if cfgFile != "" {
 		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)
@@ -153,3 +194,5 @@ func initConfig() {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
 	}
 }
+
+
