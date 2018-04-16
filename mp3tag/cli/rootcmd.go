@@ -119,12 +119,13 @@ examples and usage of using your application. For example:
 	Args: cobra.ArbitraryArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("This is main cmd line utility", args)
-		myflag := cmd.Flags().Lookup("myflag1")
+		/*myflag := cmd.Flags().Lookup("myflag1")
 		if (myflag!=nil) {
 			fmt.Println("flag val: ", myflag.Value.String())
 		} else {
 			fmt.Println("flag val: FLAG not found")
 		}
+		*/
 
 		if len(args) >=1 {
 			artist := cliFlags.artist
@@ -134,7 +135,7 @@ examples and usage of using your application. For example:
 				artist = filepath.Base(args[0])
 			}
 
-			fmt.Println("args is ", args[0])
+			fmt.Println("args is ", args[0], cliFlags.genre, cliFlags.artist)
 			EnumDir(args[0], artist, cliFlags.genre)
 
 		}

@@ -150,7 +150,7 @@ func main2() {
 	tag.SetArtist("New artist")
 	tag.SetTitle("New title")
 
-	tag.SetTrack(10)
+	//tag.SetTrack(10)
 	// Set comment frame.
 	/*comment := id3v2.CommentFrame{
 		Encoding:    id3v2.EncodingUTF8,
