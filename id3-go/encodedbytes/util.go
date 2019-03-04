@@ -6,7 +6,9 @@ package encodedbytes
 import (
 	"bytes"
 	"errors"
-	iconv "github.com/djimenez/iconv-go"
+	//iconv "github.com/djimenez/iconv-go"
+	//"github.com/djimenez/iconv-go"
+	"github.com/djimenez/iconv-go"
 )
 
 const (
@@ -22,7 +24,7 @@ type Encoding struct {
 }
 
 var (
-	EncodingMap = [...]Encoding{
+	EncodingMap = []Encoding{
 		{Name: "ISO-8859-1", NullLength: 1},
 		{Name: "UTF-16", NullLength: 2},
 		{Name: "UTF-16BE", NullLength: 2},

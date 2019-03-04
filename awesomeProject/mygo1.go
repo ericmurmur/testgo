@@ -4,7 +4,18 @@ import (
 	"math/rand"
 	"fmt"
 	"math"
+	"my.com/picutil"
 
+	"strings"
+	//"golang.org/x/tour/wc"
+
+
+	"os"
+	"path/filepath"
+
+	"github.com/CloudyKit/jet"
+
+	"bytes"
 )
 
 
@@ -29,6 +40,7 @@ func needInt(x int) int { return x*10 + 1 }
 func needFloat(x float64) float64 {
 	return x * 0.1
 }
+
 
 
 func MySqrt(x float64) float64 {
@@ -63,6 +75,18 @@ func Pic(dx, dy int) [][]uint8 {
 	return mypic
 }
 
+func WordCount(s string) map[string]int {
+	m := make(map[string]int)
+	words := strings.Fields(s)
+
+	for i,v := range words {
+		m[v]++
+		fmt.Println(i, " ")
+	}
+
+
+	return m
+}
 
 func main() {
 	fmt.Printf("Hello, world!!!.\n")
@@ -96,7 +120,7 @@ func main() {
 	fmt.Println("counting")
 
 	for i := 0; i < 10; i++ {
-		defer fmt.Println(i)
+	//	defer fmt.Println(i)
 	}
 
 	fmt.Println("done")
@@ -138,5 +162,32 @@ func main() {
 		fmt.Printf("%d\n", value)
 	}
 
-	Show(Pic)
+	picutil.Show(Pic)
+
+	//wc.Test(WordCount)
+
+
+	fmt.Println("After Word Count Test!!")
+	var View = jet.NewHTMLSet("./views") // relative to the current working directory from where this code is run
+
+	// may also use an absolute path:
+	var root, _ = os.Getwd()
+	View = jet.NewHTMLSet(filepath.Join(root, "views"))
+
+
+	templateName := "home.jet"
+	t, err := View.GetTemplate(templateName)
+	if err != nil {
+		// template could not be loaded
+		fmt.Println("Template could not be loaded.")
+	} else {
+		var w bytes.Buffer // needs to conform to io.Writer interface (like gin's context.Writer for example)
+		vars := make(jet.VarMap)
+		if err = t.Execute(&w, vars, nil); err != nil {
+			// error when executing template
+			//
+
+		}
+	}
+
 }

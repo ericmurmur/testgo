@@ -47,11 +47,11 @@ func updateMP3Tags(fullpath string, album string, title string, artist string, g
 	}
 	defer tag.Close()
 
-	fmt.Println("The tag version is : ", tag.Version(), tag.AllFrames())
+	//fmt.Println("The tag version is : ", tag.Version(), tag.AllFrames())
 	//tag.SetVersion(3)
 	// Read frames.
 	//fmt.Println(tag.Artist())
-	fmt.Println(tag.Title())
+	//fmt.Println(tag.Title())
 
 	// Set simple text frames.
 

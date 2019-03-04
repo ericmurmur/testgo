@@ -57,6 +57,7 @@ func getLocalIP() (string, error) {
 		if err != nil {
 			return "", err
 		}
+		fmt.Println(iface.Name)
 		for _, addr := range addrs {
 			var ip net.IP
 			switch v := addr.(type) {
