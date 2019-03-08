@@ -42,7 +42,7 @@ func ShowImage(m image.Image) {
 	enc := base64.StdEncoding.EncodeToString(buf.Bytes())
 	fmt.Println("IMAGE:" + enc)
 
-	oimg, _ := os.Create("mynew1.png")
+	oimg, _ := os.Create("mynew122.png")
 
 	defer oimg.Close()
 	png.Encode(oimg, m)
